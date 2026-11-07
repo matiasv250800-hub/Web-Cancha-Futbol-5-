@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Alquiler de Canchas F5</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="encabezado">
+    <div class="contenedor">
+      <p class="sobrelinea">GESTIÓN DEPORTIVA</p>
+      <h1>Alquiler de Canchas F5</h1>
+      <p>Administrá las reservas del complejo desde un solo lugar.</p>
+    </div>
+  </header>
+
+  <main class="contenedor contenido">
+    <section class="panel">
+      <h2>Nueva reserva</h2>
+      <form id="form-reserva">
+        <div class="campo">
+          <label for="cliente">Nombre del cliente</label>
+          <input id="cliente" name="cliente" type="text" maxlength="60" required placeholder="Ej. Juan Pérez">
+        </div>
+        <div class="fila-campos">
+          <div class="campo">
+            <label for="cancha">Cancha</label>
+            <select id="cancha" name="cancha" required>
+              <option value="">Seleccioná una cancha</option>
+              <option value="Cancha 1">Cancha 1</option>
+              <option value="Cancha 2">Cancha 2</option>
+              <option value="Cancha 3">Cancha 3</option>
+            </select>
+          </div>
+          <div class="campo">
+            <label for="fecha">Fecha</label>
+            <input id="fecha" name="fecha" type="date" required>
+          </div>
+        </div>
+        <div class="fila-campos">
+          <div class="campo">
+            <label for="hora">Horario</label>
+            <select id="hora" name="hora" required>
+              <option value="">Seleccioná un horario</option>
+              <option value="10:00">10:00</option>
+              <option value="12:00">12:00</option>
+              <option value="14:00">14:00</option>
+              <option value="16:00">16:00</option>
+              <option value="18:00">18:00</option>
+              <option value="20:00">20:00</option>
+              <option value="22:00">22:00</option>
+            </select>
+          </div>
+          <div class="campo">
+            <label for="duracion">Duración</label>
+            <select id="duracion" name="duracion" required>
+              <option value="1">1 hora</option>
+              <option value="2">2 horas</option>
+            </select>
+          </div>
+        </div>
+        <div class="precio-estimado" aria-live="polite">
+          <span>Precio estimado</span>
+          <strong id="precio-estimado">Seleccioná fecha y horario</strong>
+        </div>
+        <button type="submit" class="boton">Registrar reserva</button>
+        <p id="mensaje-formulario" class="mensaje" role="status"></p>
+      </form>
+    </section>
+
+    <section class="panel panel-reservas">
+      <div class="titulo-lista">
+        <div>
+          <h2>Reservas registradas</h2>
+          <p class="texto-secundario">Las reservas se guardan en este navegador.</p>
+        </div>
+        <span id="contador" class="contador">0 reservas</span>
+      </div>
+      <div id="lista-reservas" class="lista-reservas">
+        <p class="vacio">Todavía no hay reservas registradas.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="pie">
+    <div class="contenedor">Proyecto académico · Sistema de alquiler de canchas de fútbol 5</div>
+  </footer>
+  <script src="js/app.js"></script>
+</body>
+</html>
