@@ -10,45 +10,8 @@ const contador = document.querySelector('#contador');
 const mensajeFormulario = document.querySelector('#mensaje-formulario');
 
 const CLAVE_RESERVAS = 'alquilerCanchasF5.reservas';
-let reservas = cargarReservas();
-
-// Patrón Strategy: cada política define cómo calcular el precio de una reserva.
-// La selección de la política se separa del cálculo del precio.
-class EstrategiaPrecio {
-  calcular(hora, duracion) {
-    throw new Error('La estrategia debe implementar calcular().');
-  }
-}
-
-class PrecioDiaSemana extends EstrategiaPrecio {
-  calcular(hora, duracion) {
-    const horaNumero = Number(hora.split(':')[0]);
-    const precioPorHora = 15000 + (horaNumero >= 18 ? 5000 : 0);
-    return precioPorHora * Number(duracion);
-  }
-}
-
-class PrecioFinDeSemana extends EstrategiaPrecio {
-  calcular(hora, duracion) {
-    const horaNumero = Number(hora.split(':')[0]);
-    const precioPorHora = 20000 + (horaNumero >= 18 ? 5000 : 0);
-    return precioPorHora * Number(duracion);
-  }
-}
-
-const estrategiaDiaSemana = new PrecioDiaSemana();
-const estrategiaFinDeSemana = new PrecioFinDeSemana();
-
-function obtenerEstrategiaPrecio(fecha) {
-  const dia = new Date(`${fecha}T12:00:00`).getDay();
-  return dia === 0 || dia === 6
-    ? estrategiaFinDeSemana
-    : estrategiaDiaSemana;
-}
-
-function calcularPrecio(fecha, hora, duracion) {
-  return obtenerEstrategiaPrecio(fecha).calcular(hora, duracion);
-}
+const repositorio = crearRepositorioReservas(localStorage, CLAVE_RESERVAS);
+let reservas = repositorio.cargar();
 
 function formatearPrecio(valor) {
   return new Intl.NumberFormat('es-AR', {
@@ -56,19 +19,6 @@ function formatearPrecio(valor) {
     currency: 'ARS',
     maximumFractionDigits: 0
   }).format(valor);
-}
-
-function cargarReservas() {
-  try {
-    const guardadas = JSON.parse(localStorage.getItem(CLAVE_RESERVAS) || '[]');
-    return Array.isArray(guardadas) ? guardadas : [];
-  } catch {
-    return [];
-  }
-}
-
-function guardarReservas() {
-  localStorage.setItem(CLAVE_RESERVAS, JSON.stringify(reservas));
 }
 
 function actualizarPrecioEstimado() {
@@ -79,17 +29,6 @@ function actualizarPrecioEstimado() {
   precioEstimado.textContent = formatearPrecio(
     calcularPrecio(campoFecha.value, campoHora.value, campoDuracion.value)
   );
-}
-
-function existeReservaSuperpuesta(nuevaReserva) {
-  return reservas.some((reserva) => {
-    if (reserva.cancha !== nuevaReserva.cancha || reserva.fecha !== nuevaReserva.fecha) return false;
-    const inicioNuevo = Number(nuevaReserva.hora.split(':')[0]);
-    const finNuevo = inicioNuevo + Number(nuevaReserva.duracion);
-    const inicioExistente = Number(reserva.hora.split(':')[0]);
-    const finExistente = inicioExistente + Number(reserva.duracion);
-    return inicioNuevo < finExistente && inicioExistente < finNuevo;
-  });
 }
 
 function crearElementoReserva(reserva) {
@@ -140,7 +79,7 @@ function renderizarReservas() {
 
 function eliminarReserva(id) {
   reservas = reservas.filter((reserva) => reserva.id !== id);
-  guardarReservas();
+  repositorio.guardar(reservas);
   renderizarReservas();
 }
 
@@ -149,13 +88,6 @@ formulario.addEventListener('change', actualizarPrecioEstimado);
 
 const DURACION_POR_DEFECTO = '1';
 const COLOR_MENSAJE_EXITO = '#176b4d';
-const MENSAJES = {
-  clienteVacio: 'Ingresá el nombre del cliente.',
-  fechaPasada: 'La fecha de la reserva no puede estar en el pasado.',
-  reservaSuperpuesta: 'Esa cancha ya tiene una reserva que se superpone con ese horario.',
-  reservaRegistrada: 'Reserva registrada correctamente.'
-};
-
 function generarIdReserva() {
   return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
@@ -172,34 +104,16 @@ function leerReservaDelFormulario() {
   };
 }
 
-function esFechaPasada(fecha) {
-  const hoy = new Date();
-  hoy.setHours(0, 0, 0, 0);
-  return new Date(`${fecha}T00:00:00`) < hoy;
-}
-
-// Devuelve el primer error de validación { mensaje, campo }, o null si la reserva es válida.
-function validarReserva(reserva) {
-  if (!reserva.cliente) {
-    return { mensaje: MENSAJES.clienteVacio, campo: campoCliente };
-  }
-  if (esFechaPasada(reserva.fecha)) {
-    return { mensaje: MENSAJES.fechaPasada, campo: campoFecha };
-  }
-  if (existeReservaSuperpuesta(reserva)) {
-    return { mensaje: MENSAJES.reservaSuperpuesta, campo: campoHora };
-  }
-  return null;
-}
+const CAMPOS = { cliente: campoCliente, fecha: campoFecha, hora: campoHora };
 
 function mostrarError({ mensaje, campo }) {
   mensajeFormulario.textContent = mensaje;
-  campo.focus();
+  CAMPOS[campo].focus();
 }
 
 function registrarReserva(reserva) {
   reservas.push(reserva);
-  guardarReservas();
+  repositorio.guardar(reservas);
   renderizarReservas();
 }
 
@@ -218,9 +132,10 @@ function mostrarExito() {
 function manejarEnvioFormulario(evento) {
   evento.preventDefault();
   mensajeFormulario.textContent = '';
+  mensajeFormulario.style.color = '';
 
   const reserva = leerReservaDelFormulario();
-  const error = validarReserva(reserva);
+  const error = validarReserva(reserva, reservas);
   if (error) {
     mostrarError(error);
     return;
