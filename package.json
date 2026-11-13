@@ -1,0 +1,14 @@
+{
+  "name": "sistema-alquiler-canchas-f5",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Sistema de alquiler de canchas de fútbol 5 (proyecto académico)",
+  "scripts": {
+    "test": "node --test tests/unitarias.test.js tests/integracion.test.js",
+    "test:e2e": "node --test tests/e2e.test.js",
+    "test:todo": "node --test tests/*.test.js"
+  },
+  "devDependencies": {
+    "playwright": "^1.48.0"
+  }
+}
