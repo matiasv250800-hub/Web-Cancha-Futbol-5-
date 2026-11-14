@@ -34,3 +34,16 @@ Esta solución es una evolución de esta versión académica del proyecto; no se
 ## TP 3: refactor y code review
 
 Se refactorizó el manejador del evento `submit` del formulario (`manejarEnvioFormulario` y funciones auxiliares en `js/app.js`) sin cambiar el comportamiento. Diagnóstico y comparación antes/después en `docs/tp3-diagnostico-refactor.md`; registro de la revisión en `docs/tp3-registro-revision.md`.
+
+## TP 4: suite de pruebas
+
+La lógica pura (precio, superposición, validación y persistencia) está en `js/logica.js`, que se carga en el navegador con `<script>` y se importa desde Node en las pruebas. Las pruebas están en `tests/`:
+
+```
+npm install
+npx playwright install chromium   # solo la primera vez, para la prueba E2E
+npm test                          # unitarias + integración
+npm run test:e2e                  # prueba funcional E2E
+```
+
+Resultados, trazabilidad y pendientes en `docs/tp4-reporte-verificacion.md`.
